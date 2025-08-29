@@ -3,8 +3,39 @@
 
   dayjs.locale('es')
 
+  // ======== API KEY en tiempo de ejecución (no hardcode) ========
+const KEY_STORAGE = 'aviationstack_key'
+let ACCESS_KEY = localStorage.getItem(KEY_STORAGE) || ''
+
+// Pide la API key con SweetAlert2 si no existe y la guarda en localStorage
+async function ensureApiKey() {
+  while (!ACCESS_KEY) {
+    const { value: k } = await Swal.fire({
+      title: 'Configura tu API Key',
+      text: 'Ingresa tu clave de aviationstack. Se guardará en este navegador.',
+      input: 'password',            // o 'text' si prefieres verla
+      inputPlaceholder: 'tu_access_key',
+      inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
+      confirmButtonText: 'Guardar',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      inputValidator: (v) => !v ? 'La API key es obligatoria' : undefined
+    })
+    ACCESS_KEY = (k || '').trim()
+    if (ACCESS_KEY) localStorage.setItem(KEY_STORAGE, ACCESS_KEY)
+  }
+  return ACCESS_KEY
+}
+
+// Opción para cambiarla luego (por ejemplo desde la consola o un botón de ajustes)
+async function resetApiKey(){
+  localStorage.removeItem(KEY_STORAGE)
+  ACCESS_KEY = ''
+  await ensureApiKey()
+}
+
+
   // ======== CONFIGURACIÓN DE API ========
-  const ACCESS_KEY = '082fcef099b48cf3494902b9644c349c'
   const BASE = 'http://api.aviationstack.com/v1'
   const PROXY = 'https://api.allorigins.win/raw?url='
   const useProxy = true
@@ -484,6 +515,7 @@
     }
 
     async function firstLoad(){
+      await ensureApiKey()
       initSelects()
       bindEvents()
       byId('formArrivals').dispatchEvent(new Event('submit'))
