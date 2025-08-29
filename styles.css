@@ -1,0 +1,30 @@
+:root{ --brand: #0d6efd; }
+body{ background: #f8fafc; }
+.table tbody tr td, .table thead th{ vertical-align: middle; }
+.badge-status{ text-transform: capitalize; }
+.btn-icon{ display: inline-flex; align-items: center; gap:.35rem; }
+.offcanvas .card{ border-radius: 1rem; }
+.card{ border: 0; border-radius: 1rem; }
+.card .card-title{ font-weight: 600; }
+#trackResult .card{ border-left: 5px solid var(--brand); }
+select[multiple]{ min-height: 140px; }
+.text-ellipsis{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Chips (etiquetas de selección) */
+.chips{ display:flex; flex-wrap: wrap; gap:.5rem; }
+.chip{ background:#e7f1ff; border:1px solid #cfe2ff; color:#084298; padding:.25rem .6rem; border-radius: 999px; font-size:.8rem; }
+
+/* Dashboard-like tables */
+.table-container{
+  overflow: auto;
+  max-height: 480px;
+  border-radius: .75rem;
+  background: #fff;
+}
+.table thead th{
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  z-index: 1;
+}
+.table td, .table th{ white-space: nowrap; }

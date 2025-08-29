@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="./src/img/logo.png">
+  <title>Agencia MX Monitor de Vuelos</title>
+  <meta name="description" content="Simulador interactivo de agencia de viajes mexicana con monitor de vuelos usando Aviationstack.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14'%3E✈%3C/text%3E%3C/svg%3E">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.11.1/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="bi bi-airplane-fill me-2"></i>Agencia MX — Monitor de Vuelos
+      </a>
+      <div class="collapse navbar-collapse show">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item">
+            <span class="navbar-text small text-white-50">Conectado a aviationstack</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="bg-light border-bottom">
+    <div class="container py-4">
+      <div class="row g-3 align-items-center">
+        <div class="col-12 col-lg-8">
+          <h1 class="h3 mb-1">Simulador de Agencia de Viajes Mexicana</h1>
+          <p class="text-secondary mb-0">
+            Monitorea vuelos que <strong>llegan</strong> a México o <strong>salen</strong> desde México. Busca por número de vuelo, aerolínea o ruta y guarda favoritos.
+            Fuente de datos: <em>aviationstack</em>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO -->
+  <main class="container my-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-arrivals-tab" data-bs-toggle="pill" data-bs-target="#pills-arrivals" type="button" role="tab" aria-controls="pills-arrivals" aria-selected="true">
+              <i class="bi bi-box-arrow-in-down me-1"></i>Llegadas a México
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-departures-tab" data-bs-toggle="pill" data-bs-target="#pills-departures" type="button" role="tab" aria-controls="pills-departures" aria-selected="false">
+              <i class="bi bi-box-arrow-up me-1"></i>Salidas desde México
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-track-tab" data-bs-toggle="pill" data-bs-target="#pills-track" type="button" role="tab" aria-controls="pills-track" aria-selected="false">
+              <i class="bi bi-search me-1"></i>Seguimiento puntual
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="pills-tabContent">
+          <!-- LLEGADAS -->
+          <div class="tab-pane fade show active" id="pills-arrivals" role="tabpanel" aria-labelledby="pills-arrivals-tab" tabindex="0">
+            <form id="formArrivals" class="row g-3 align-items-end">
+              <div class="col-xl-4">
+                <label for="selectArrAirports" class="form-label">Aeropuertos MX (arribo)</label>
+                <select id="selectArrAirports" class="form-select" multiple></select>
+                <div id="chipsArr" class="chips mt-2"></div>
+                <div class="form-text">Selecciona 1–5 aeropuertos</div>
+                <div class="small text-secondary mt-1" id="todayNoteArr"></div>
+              </div>
+              <div class="col-md-3 d-none" aria-hidden="true">
+                <label for="inputArrDate" class="form-label">Fecha</label>
+                <input type="date" class="form-control" id="inputArrDate">
+              </div>
+              <div class="col-md-3">
+                <label for="selectAirlineA" class="form-label">Aerolínea</label>
+                <select id="selectAirlineA" class="form-select">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="col-md-2 text-end d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary btn-sm" id="btnStatsArr" type="button">
+                  <i class="bi bi-activity me-1"></i>Ver conteo
+                </button>
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-arrow-repeat me-1"></i>Buscar
+                </button>
+              </div>
+            </form>
+
+            <!-- FILTROS TABLA LLEGADAS -->
+            <div class="card bg-body-tertiary border-0 mt-3">
+              <div class="card-body py-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_Flight">Vuelo</label>
+                    <input id="filterA_Flight" class="form-control form-control-sm" placeholder="Ej. AM123">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_Airline">Aerolínea</label>
+                    <input id="filterA_Airline" class="form-control form-control-sm" list="datalistAirlines" placeholder="Todas">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_Origin">Origen</label>
+                    <input id="filterA_Origin" class="form-control form-control-sm" placeholder="Ciudad o IATA">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_DepFrom">Salida desde</label>
+                    <input id="filterA_DepFrom" type="time" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_DepTo">Salida hasta</label>
+                    <input id="filterA_DepTo" type="time" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterA_Status">Estatus</label>
+                    <select id="filterA_Status" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      <option value="scheduled">Programado</option>
+                      <option value="active">Activo</option>
+                      <option value="landed">Aterrizado</option>
+                      <option value="cancelled">Cancelado</option>
+                      <option value="diverted">Desviado</option>
+                      <option value="incident">Incidente</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <div class="table-container shadow-sm">
+                  <table class="table table-hover align-middle table-sm" id="tblArrivals">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Vuelo</th>
+                        <th>Aerolínea</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Salida</th>
+                        <th>Llegada</th>
+                        <th>Estatus</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">Top Aerolíneas</h6>
+                    <canvas id="chartArrAirlines" height="220"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">Estatus</h6>
+                    <canvas id="chartArrStatus" height="220"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SALIDAS -->
+          <div class="tab-pane fade" id="pills-departures" role="tabpanel" aria-labelledby="pills-departures-tab" tabindex="0">
+            <form id="formDepartures" class="row g-3 align-items-end">
+              <div class="col-xl-4">
+                <label for="selectDepAirports" class="form-label">Aeropuertos MX (salida)</label>
+                <select id="selectDepAirports" class="form-select" multiple></select>
+                <div id="chipsDep" class="chips mt-2"></div>
+                <div class="form-text">Selecciona 1–5 aeropuertos</div>
+                <div class="small text-secondary mt-1" id="todayNoteDep"></div>
+              </div>
+              <div class="col-md-3 d-none" aria-hidden="true">
+                <label for="inputDepDate" class="form-label">Fecha</label>
+                <input type="date" class="form-control" id="inputDepDate">
+              </div>
+              <div class="col-md-3">
+                <label for="selectAirlineD" class="form-label">Aerolínea</label>
+                <select id="selectAirlineD" class="form-select">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="col-md-2 text-end d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary btn-sm" id="btnStatsDep" type="button">
+                  <i class="bi bi-activity me-1"></i>Ver conteo
+                </button>
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-arrow-repeat me-1"></i>Buscar
+                </button>
+              </div>
+            </form>
+
+            <!-- FILTROS TABLA SALIDAS -->
+            <div class="card bg-body-tertiary border-0 mt-3">
+              <div class="card-body py-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_Flight">Vuelo</label>
+                    <input id="filterD_Flight" class="form-control form-control-sm" placeholder="Ej. AM456">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_Airline">Aerolínea</label>
+                    <input id="filterD_Airline" class="form-control form-control-sm" list="datalistAirlines" placeholder="Todas">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_Dest">Destino</label>
+                    <input id="filterD_Dest" class="form-control form-control-sm" placeholder="Ciudad o IATA">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_DepFrom">Salida desde</label>
+                    <input id="filterD_DepFrom" type="time" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_DepTo">Salida hasta</label>
+                    <input id="filterD_DepTo" type="time" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small" for="filterD_Status">Estatus</label>
+                    <select id="filterD_Status" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      <option value="scheduled">Programado</option>
+                      <option value="active">Activo</option>
+                      <option value="landed">Aterrizado</option>
+                      <option value="cancelled">Cancelado</option>
+                      <option value="diverted">Desviado</option>
+                      <option value="incident">Incidente</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <div class="table-container shadow-sm">
+                  <table class="table table-hover align-middle table-sm" id="tblDepartures">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Vuelo</th>
+                        <th>Aerolínea</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Salida</th>
+                        <th>Llegada</th>
+                        <th>Estatus</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">Top Aerolíneas</h6>
+                    <canvas id="chartDepAirlines" height="220"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">Estatus</h6>
+                    <canvas id="chartDepStatus" height="220"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TRACKING -->
+          <div class="tab-pane fade" id="pills-track" role="tabpanel" aria-labelledby="pills-track-tab" tabindex="0">
+            <form id="formTrack" class="row g-3 align-items-end">
+              <div class="col-md-4">
+                <label for="inputFlightNumber" class="form-label">Número de vuelo (Ej. AMX123)</label>
+                <input type="text" class="form-control" id="inputFlightNumber" placeholder="IATA + número">
+              </div>
+              <div class="col-md-4 d-none" aria-hidden="true">
+                <label for="inputFlightDate" class="form-label">Fecha</label>
+                <input type="date" class="form-control" id="inputFlightDate">
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="text-secondary small mb-1" id="todayNoteTrack"></div>
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-binoculars me-1"></i>Seguir vuelo
+                </button>
+              </div>
+            </form>
+
+            <div id="trackResult" class="mt-4"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- datalist de aerolíneas para filtros -->
+    <datalist id="datalistAirlines"></datalist>
+  </main>
+
+  <!-- OFFCANVAS WATCHLIST -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasWatch" aria-labelledby="offcanvasWatchLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasWatchLabel"><i class="bi bi-bookmark-star me-2"></i>Favoritos</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="watchlistContainer" class="vstack gap-2"></div>
+      <div class="d-grid mt-3">
+        <button id="btnExportCSV" class="btn btn-outline-primary">
+          <i class="bi bi-filetype-csv me-1"></i>Exportar CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="py-4 border-top bg-white">
+    <div class="container small text-secondary d-flex flex-wrap justify-content-between align-items-center">
+      <span>© <span id="year"></span> Agencia MX (ProyectoFinalCasasI)</span>
+      <a href="https://aviationstack.com/" target="_blank" rel="noreferrer">Datos por aviationstack</a>
+    </div>
+  </footer>
+
+  <!-- Librerias -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.4/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.11/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.11/locale/es.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.11.1/dist/sweetalert2.all.min.js"></script>
+
+  <!-- Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- App Javascript-->
+  <script src="./app.js"></script>
+</body>
+</html>
